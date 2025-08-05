@@ -38,7 +38,7 @@ We regularly add more projects as we continue learning and collaborating.
 |--------|----------------|
 | Mazen  | [@MazenMDev](https://github.com/MazenMDev) |
 | Khalid | [@khalidoxox0](https://github.com/khalidoxox0) |
-| Karim  | [@KarXB](https://github.com/KarXB) |
+| Kareem  | [@KareemH-1](https://github.com/KareemH-1) |
 
 We each contribute to the planning, coding, and reviewing of projects as a shared learning experience.
 
