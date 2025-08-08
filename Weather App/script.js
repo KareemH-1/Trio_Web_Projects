@@ -75,8 +75,7 @@ function getWeather() {
             await getCityImg(city, timeOfDay);
 
             displayGeoData(geoData);
-            displayWeather(weatherData);
-
+            displayWeather(weatherData, timeOfDay);
             let timeH = document.getElementById("Time");
             timeH.textContent = `${timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}`;
 
@@ -152,22 +151,12 @@ function displayGeoData(data) {
   title.textContent = `${cityName}, ${country}`;
 }
 
-function displayWeather(data) {
-  let Temperature = document.getElementById("Temperature");
-  let Description = document.getElementById("Description");
-  let FeelsLike = document.getElementById("FeelsLike");
-  let Humidity = document.getElementById("Humidity");
 
-  Temperature.textContent = data.main.temp + "°C";
-  Description.textContent = data.weather[0].description;
-  FeelsLike.textContent = "Feels like: " + data.main.feels_like + "°C";
-  Humidity.textContent = "Humidity: " + data.main.humidity + "%";
-}
 
 function getCityImg(city, timeOfDay) {
   const accessKey = "hn70d1OomPjMpzig1_sGhy94zTDyBHSOhXkbW-sCuko";
 
-  const query = `${city} at ${timeOfDay} sky`;
+  const query = `${timeOfDay} sky`;
   console.log(query);
 
   const url = `https://api.unsplash.com/search/photos?query=${query}&orientation=landscape&per_page=1`;
@@ -222,3 +211,47 @@ function clearWeatherData() {
   document.getElementById("Time").textContent = "";
   mainDiv.style.backgroundImage = "";
 }
+
+function getWeatherIcon(id, timeOfDay) {
+  // Clear sky
+  if (id === 800) {
+    return timeOfDay === "night" ? "🌙" : "☀️";
+  }
+
+  // Cloudy
+  if (id >= 801 && id <= 804) {
+    return timeOfDay === "night" ? "☁️🌙" : "☁️";
+  }
+
+  // Rain/Storm
+  if ((id >= 200 && id <= 232) || (id >= 300 && id <= 321) || (id >= 500 && id <= 531)) {
+    return timeOfDay === "night" ? "🌧️🌙" : "🌧️";
+  }
+
+  // Snow/Mist
+  if ((id >= 600 && id <= 622) || (id >= 701 && id <= 781)) {
+    return "❄️";
+  }
+
+  // Fallback
+  return "🌈";
+}
+
+
+
+function displayWeather(data, timeOfDay) {
+  let Temperature = document.getElementById("Temperature");
+  let Description = document.getElementById("Description");
+  let FeelsLike = document.getElementById("FeelsLike");
+  let Humidity = document.getElementById("Humidity");
+
+  Temperature.textContent = data.main.temp + "°C";
+  Description.textContent = data.weather[0].description;
+  FeelsLike.textContent = "Feels like: " + data.main.feels_like + "°C";
+  Humidity.textContent = "Humidity: " + data.main.humidity + "%";
+
+  let weatherId = data.weather[0].id;
+  let icon = getWeatherIcon(weatherId, timeOfDay);
+  document.getElementById("Icon").textContent = icon;
+}
+

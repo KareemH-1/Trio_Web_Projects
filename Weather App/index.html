@@ -1,32 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Weather App</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <h1>Weather App</h1>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Weather App</title>
+        <link rel="stylesheet" href="styles.css" />
+      </head>
+      <body>
+        <h1>Weather App</h1>
 
-    <form id="form">
-        <label for="city">Enter a city: </label>
-        <input type="text" placeholder="New York...." name="city" id="inp">
-        <input type="submit" value="Search" id="city">
-    </form>
-    <p id="error"></p>
-    <div class="main">
-        <div id="loading">
-            <p>Loading...</p>
+        <!-- form -->
+        <form id="form">
+          <!-- <label for="city">Enter a city: </label> -->
+          <input type="text" placeholder="Enter a city" name="city" id="inp" />
+          <input type="submit" value="Search" id="city" />
+        </form>
+
+        <!-- error -->
+
+        <p id="error"></p>
+
+        <!-- loading -->
+
+        <!-- weather -->
+
+        <div class="main">
+          <section id="loading">
+            <div class="container">
+              <div class="cloud front">
+                <span class="left-front"></span>
+                <span class="right-front"></span>
+              </div>
+              <span class="sun sunshine"></span>
+              <span class="sun"></span>
+              <div class="cloud back">
+                <span class="left-back"></span>
+                <span class="right-back"></span>
+        
+            </div>
+            </div>
+        
+        </section>
+
+          <div id="main-content">
+            <h1 id="city-name"></h1>
+
+            <div id="date">
+              <h2 id="Time"></h2>
+              <h2 id="Hour"></h2>
+            </div>
+          
+            <div id="weather-info">
+              <h2 id="Temperature"></h2>
+              <h2 id="Icon"></h2>
+              <h2 id="Description"></h2>
+            </div>
+          
         </div>
-        <h1 id="city-name"></h1>
-        <h2 id="Time"></h2>
-        <h2 id="Hour"></h2>
-        <h2 id="Temperature"></h2>
-        <h2 id="Description"></h2>
-        <h2 id="FeelsLike"></h2>
-        <h2 id="Humidity"></h2>
-    </div>
-    <script src="script.js"></script>
-</body>
+
+          <div id="weather-icon">
+            <h2 id="FeelsLike"></h2>
+            <h2 id="Humidity"></h2>
+          </div>
+        </div>
+
+        <footer>
+          <p>
+            Weather App by
+            <a href="https://github.com/khalidoxox0">Khalid</a> |<a
+              href="https://github.com/KareemH-1"
+              >Kareem</a
+            >
+          </p>
+        </footer>
+
+        <script src="script.js"></script>
+      </body>
+    </html>
+  </body>
 </html>
