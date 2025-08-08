@@ -1,116 +1,142 @@
 const loadingDiv = document.getElementById("loading");
 
+const citySearchCounts = {};
+const imageSearch = {};
+
 function showLoading() {
-  loadingDiv.style.opacity = "1";
+  loadingDiv.classList.add("visible");
 }
 
 function hideLoading() {
-  loadingDiv.style.opacity = "0";
+  loadingDiv.classList.remove("visible");
 }
+
+let errorMes = document.getElementById("error");
+function showError(message){
+  console.log("Showing error:", message);
+
+  if (errorMes.hideTimeout) {
+    clearTimeout(errorMes.hideTimeout);
+  }
+  
+  errorMes.innerHTML = message;
+  errorMes.textContent = message;
+  
+  errorMes.style.display = "block";
+  errorMes.style.visibility = "visible";
+  errorMes.style.opacity = "1";
+  
+  errorMes.classList.add("show");
+  
+  errorMes.hideTimeout = setTimeout(() => {
+    errorMes.classList.remove("show");
+    errorMes.style.display = "none";
+    errorMes.textContent = "";
+  }, 4000);
+}
+
 
 document.getElementById("form").addEventListener("submit", function (event) {
   event.preventDefault();
   getWeather();
 });
 
-document.getElementById("city").addEventListener("click", function (event) {
+document.getElementById("search-btn").addEventListener("click", function (event) {
   event.preventDefault();
   getWeather();
 });
 
-let errorMes = document.getElementById("error");
 
 function getWeather() {
   let city = document.getElementById("inp").value;
   const API = "a0d580f8b6249b82297a2b8b5021f5b2";
 
   if (!city || city.trim() === "") {
-    errorMes.innerHTML = "Please enter a valid city name!";
-    setTimeout(() => {
-      errorMes.innerHTML = "";
-    }, 3000);
+    showError("Please enter a valid city name!");
     return;
   }
+  const cityKey = city.toLowerCase();
 
   console.log("Searching for city:", city);
   clearWeatherData();
   showLoading();
+  mainDiv.classList.remove("visible");
 
-  let geoURL = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=5&appid=${API}`;
+  setTimeout(() => {
+    let geoURL = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=5&appid=${API}`;
 
-  fetch(geoURL)
-    .then((response) => response.json())
-    .then((geoData) => {
-      console.log(geoData);
-      if (geoData.length > 0) {
-        let lat = geoData[0].lat;
-        let lon = geoData[0].lon;
-        let cityName = geoData[0].name;
-        let country = geoData[0].country;
+    fetch(geoURL)
+      .then((response) => response.json())
+      .then((geoData) => {
+        console.log(geoData);
+        if (geoData.length > 0) {
+          let lat = geoData[0].lat;
+          let lon = geoData[0].lon;
+          let cityName = geoData[0].name;
+          let country = geoData[0].country;
 
-        console.log("Latitude:", lat);
-        console.log("Longitude:", lon);
-        console.log("City:", cityName);
-        console.log("Country:", country);
+          console.log("Latitude:", lat);
+          console.log("Longitude:", lon);
+          console.log("City:", cityName);
+          console.log("Country:", country);
 
-        let weatherURL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
+          let weatherURL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
 
-        fetch(weatherURL)
-          .then((response) => response.json())
-          .then(async (weatherData) => {
-            
-            const { hour, formattedTime } = await getTime(lat, lon);
+          fetch(weatherURL)
+            .then((response) => response.json())
+            .then(async (weatherData) => {
+              if (!citySearchCounts[cityKey]) citySearchCounts[cityKey] = 0;
+              citySearchCounts[cityKey]++;
 
-            let timeOfDay = "";
-            if (hour >= 19 || hour <= 5) {
-              timeOfDay = "night";
-            } else if (hour === 5) {
-              timeOfDay = "sunrise";
-            } else if (hour === 18) {
-              timeOfDay = "sunset";
-            } else {
-              timeOfDay = "day";
-            }
+              console.log("City Search Count:", citySearchCounts[cityKey]);
+              const { hour, formattedTime } = await getTime(lat, lon);
 
-            await getCityImg(city, timeOfDay);
+              let timeOfDay = "";
+              if (hour >= 19 || hour <= 5) {
+                timeOfDay = "night";
+              } else if (hour === 5) {
+                timeOfDay = "sunrise";
+              } else if (hour === 18) {
+                timeOfDay = "sunset";
+              } else {
+                timeOfDay = "day";
+              }
 
-            displayGeoData(geoData);
-            displayWeather(weatherData, timeOfDay);
-            let timeH = document.getElementById("Time");
-            timeH.textContent = `${timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}`;
+              await getCityImg(
+                weatherData.weather[0].description,
+                timeOfDay,
+                citySearchCounts[cityKey]
+              );
+              displayGeoData(geoData);
+              displayWeather(weatherData);
 
-            let timeDisplay = document.getElementById("Hour");
-            timeDisplay.textContent = `Time: ${formattedTime}`;
+              let timeH = document.getElementById("Time");
+              timeH.textContent = `${
+                timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)
+              }`;
 
-            hideLoading();
-          })
-          .catch((error) => {
-            console.error("Weather API Error:", error);
-            errorMes.innerHTML = `API Error: ${error.message}`;
-            setTimeout(() => {
-              errorMes.innerHTML = "";
-            }, 3000);
-            hideLoading();
-          });
-      } else {
-        console.log("City not found! Try a different spelling or city name.");
-
-        errorMes.innerHTML =
-          "City not found! Please check the spelling and try again.";
-        setTimeout(() => {
-          errorMes.innerHTML = "";
-        }, 3000);
+              let timeDisplay = document.getElementById("Hour");
+              timeDisplay.textContent = `Time: ${formattedTime}`;
+              mainDiv.classList.add("visible");
+              hideLoading();
+            })
+            .catch((error) => {
+              console.error("Weather API Error:", error);
+              showError(`API Error: ${error.message}`);
+              console.error("Error fetching weather data:", error);
+              hideLoading();
+            });
+        } else {
+          showError("City not found! Please check the spelling and try again.");
+          hideLoading();
+        }
+      })
+      .catch((error) => {
+        console.error("Geo API Error:", error);
+        showError(`API Error: ${error.message}`);
         hideLoading();
-      }
-    })
-    .catch((error) => {
-      console.error("Geo API Error:", error);
-      errorMes.innerHTML = `API Error: ${error.message}`;
-      setTimeout(() => {
-        errorMes.innerHTML = "";
-      }, 3000);
-      hideLoading();
-    });
+      });
+  }, 1000);
 }
 
 const mainDiv = document.querySelector(".main");
@@ -136,10 +162,7 @@ async function getTime(lat, lon) {
     return { hour: hourInt, formattedTime };
   } catch (error) {
     console.error("Time Zone API Error:", error);
-    errorMes.innerHTML = `Time Zone API Error: ${error}`;
-    setTimeout(() => {
-      errorMes.innerHTML = "";
-    }, 3000);
+    showError(`Time Zone API Error: ${error.message}`);
     return { hour: 12, formattedTime: "12:00 PM" };
   }
 }
@@ -151,16 +174,58 @@ function displayGeoData(data) {
   title.textContent = `${cityName}, ${country}`;
 }
 
+function getWeatherIcon(iconCode) {
+  const url = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  console.log("getWeatherIcon called with iconCode:", iconCode, "URL:", url);
+  return url;
+}
 
+function displayWeather(data) {
+  let Temperature = document.getElementById("Temperature");
+  let Description = document.getElementById("Description");
+  let FeelsLike = document.getElementById("FeelsLike");
+  let Humidity = document.getElementById("Humidity");
+  let Icon = document.getElementById("Icon");
 
-function getCityImg(city, timeOfDay) {
+  Temperature.textContent = data.main.temp + "°C";
+  Description.textContent = data.weather[0].description;
+  FeelsLike.textContent = "Feels like: " + data.main.feels_like + "°C";
+  Humidity.textContent = "Humidity: " + data.main.humidity + "%";
+  if (Icon && data.weather[0].icon) {
+    const iconCode = data.weather[0].icon;
+    const iconUrl = getWeatherIcon(iconCode);
+    console.log("Setting Icon.src to:", iconUrl);
+    Icon.src = iconUrl;
+    Icon.alt = data.weather[0].description;
+    Icon.style.display = "inline-block";
+    Icon.style.width = "80px";
+    Icon.style.height = "80px";
+  } else {
+    console.log(
+      "Icon element or icon code missing",
+      Icon,
+      data.weather[0].icon
+    );
+  }
+}
+
+function getCityImg(description, timeOfDay, count = 1) {
   const accessKey = "hn70d1OomPjMpzig1_sGhy94zTDyBHSOhXkbW-sCuko";
+  const query = `${description} ${timeOfDay}`;
+  const cacheKey = `${description.toLowerCase()}_${timeOfDay}`;
 
-  const query = `${timeOfDay} sky`;
-  console.log(query);
+  console.log("getCityImg called with:", { description, timeOfDay, count, query });
 
-  const url = `https://api.unsplash.com/search/photos?query=${query}&orientation=landscape&per_page=1`;
+  if (imageSearch[cacheKey]) {
+    const images = imageSearch[cacheKey];
+    const index = (count - 1) % images.length;
+    console.log("Using cached image:", images[index]);
+    setMainDivBackground(images[index]);
+    return Promise.resolve();
+  }
 
+  console.log("Fetching new images from Unsplash API...");
+  const url = `https://api.unsplash.com/search/photos?query=${query}&orientation=landscape&per_page=3`;
   return fetch(url, {
     headers: {
       Authorization: `Client-ID ${accessKey}`,
@@ -170,35 +235,32 @@ function getCityImg(city, timeOfDay) {
     .then((data) => {
       console.log("Unsplash API response:", data);
       if (data.results && data.results.length > 0) {
-        const imageUrl = data.results[0].urls.regular;
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = function () {
-            if (mainDiv) {
-              mainDiv.style.backgroundImage = `url(${imageUrl})`;
-              mainDiv.style.backgroundSize = "cover";
-              mainDiv.style.backgroundPosition = "center";
-            }
-            resolve();
-          };
-          img.onerror = function () {
-            console.error("Image failed to load");
-            reject(new Error("Image failed to load"));
-          };
-          img.src = imageUrl;
-        });
+        const images = data.results.slice(0, 3).map((img) => img.urls.regular);
+        imageSearch[cacheKey] = images;
+        const index = (count - 1) % images.length;
+        console.log("Setting background to:", images[index]);
+        setMainDivBackground(images[index]);
       } else {
         console.log("No images found for this city");
-        return Promise.resolve();
       }
     })
     .catch((error) => {
       console.error("Unsplash API Error:", error);
-      errorMes.innerHTML = `Image API Error: ${error.message}`;
-      setTimeout(() => {
-        errorMes.innerHTML = "";
-      }, 3000);
+      showError(`Image API Error: ${error.message}`);
     });
+}
+
+function setMainDivBackground(imageUrl) {
+  console.log("Setting background image:", imageUrl);
+  if (mainDiv) {
+    mainDiv.style.backgroundImage = `url(${imageUrl})`;
+    mainDiv.style.backgroundSize = "cover";
+    mainDiv.style.backgroundPosition = "center";
+    mainDiv.style.backgroundRepeat = "no-repeat";
+    console.log("Background image applied to main div");
+  } else {
+    console.error("mainDiv not found");
+  }
 }
 
 function clearWeatherData() {
@@ -208,50 +270,11 @@ function clearWeatherData() {
   document.getElementById("FeelsLike").textContent = "";
   document.getElementById("Humidity").textContent = "";
   document.getElementById("Hour").textContent = "";
+
+  document.getElementById("Icon").src = "";
+  document.getElementById("Icon").alt = "";
+  document.getElementById("Icon").style.display = "none";
+
   document.getElementById("Time").textContent = "";
   mainDiv.style.backgroundImage = "";
 }
-
-function getWeatherIcon(id, timeOfDay) {
-  // Clear sky
-  if (id === 800) {
-    return timeOfDay === "night" ? "🌙" : "☀️";
-  }
-
-  // Cloudy
-  if (id >= 801 && id <= 804) {
-    return timeOfDay === "night" ? "☁️🌙" : "☁️";
-  }
-
-  // Rain/Storm
-  if ((id >= 200 && id <= 232) || (id >= 300 && id <= 321) || (id >= 500 && id <= 531)) {
-    return timeOfDay === "night" ? "🌧️🌙" : "🌧️";
-  }
-
-  // Snow/Mist
-  if ((id >= 600 && id <= 622) || (id >= 701 && id <= 781)) {
-    return "❄️";
-  }
-
-  // Fallback
-  return "🌈";
-}
-
-
-
-function displayWeather(data, timeOfDay) {
-  let Temperature = document.getElementById("Temperature");
-  let Description = document.getElementById("Description");
-  let FeelsLike = document.getElementById("FeelsLike");
-  let Humidity = document.getElementById("Humidity");
-
-  Temperature.textContent = data.main.temp + "°C";
-  Description.textContent = data.weather[0].description;
-  FeelsLike.textContent = "Feels like: " + data.main.feels_like + "°C";
-  Humidity.textContent = "Humidity: " + data.main.humidity + "%";
-
-  let weatherId = data.weather[0].id;
-  let icon = getWeatherIcon(weatherId, timeOfDay);
-  document.getElementById("Icon").textContent = icon;
-}
-
