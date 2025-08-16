@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="search-overlay" class="search-overlay">
+      <!-- search closing button-->
+      <button id="search-close" class="search-close">&times;</button>
+      
+      <h1>Weather App</h1>
+      
+      <!-- form -->
+      <form id="form">
+        <input type="text" placeholder="Enter a city" name="city" id="inp" />
+        <input type="submit" value="Search" id="search-btn" />
+      </form>
+
+      <!-- error -->
+      <p id="error"></p>
+    </div>
+
+    <!-- Search button for opening search -->
+    <button id="search-toggle" class="search-toggle hidden">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+      </svg>
+      Search New City
+    </button>
+
+    <!-- loading -->
+    <section id="loading">
+        <div class="container">
+          <div class="cloud front">
+            <span class="left-front"></span>
+            <span class="right-front"></span>
+          </div>
+          <span class="sun sunshine"></span>
+          <span class="sun"></span>
+          <div class="cloud back">
+            <span class="left-back"></span>
+            <span class="right-back"></span>
+        </div>
+        </div>
+    </section>
+
+    <!-- weather -->
+    <div class="main">
+      <div id="main-content">
+        <h1 id="city-name"></h1>
+
+        <div id="date">
+          <h2 id="Time"></h2>
+          <h2 id="Hour"></h2>
+        </div>
+      
+        <div id="weather-info">
+          <h2 id="Temperature"></h2>
+          <img id="Icon"></img>
+          <h2 id="Description"></h2>
+        </div>
+      </div>
+
+      <div id="weather-icon">
+        <h2 id="FeelsLike"></h2>
+        <h2 id="Humidity"></h2>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        Weather App by
+        <a href="https://github.com/khalidoxox0">Khalid</a> | <a
+          href="https://github.com/KareemH-1"
+          >Kareem</a
+        >
+      </p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
