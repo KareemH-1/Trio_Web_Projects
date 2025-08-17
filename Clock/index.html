@@ -14,11 +14,29 @@
     </nav>
 
     <div id="clock">
+        <div id="timeContainer">
+            <h1 id="time">HH / MM</h1>
+            <h1 id="ampm"></h1>
+            <button id="changeampm" onclick="toggle24H()">Toggle 24hr format</button>
+        </div>
         
+        <div id="days">
+            <h1 id="Saturday" class="day transparent">Saturday</h1>
+            <h1 id="Sunday" class="day transparent">Sunday</h1>
+            <h1 id="Monday" class="day transparent">Monday</h1>
+            <h1 id="Tuesday" class="day transparent">Tuesday</h1>
+            <h1 id="Wednesday" class="day transparent">Wednesday</h1>
+            <h1 id="Thursday" class="day transparent">Thursday</h1>
+            <h1 id="Friday" class="day transparent">Friday</h1>
+        </div>
+        
+        <div id="date">
+            <h1 id="dateHeading">MM / DD / YYYY</h1>
+        </div>
     </div>
 
     <div id="timer" class="hide">
-    
+
     </div>
     
     <div id="stopwatch" class="hide">

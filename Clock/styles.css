@@ -39,3 +39,13 @@ nav{
 #stopwatch{
     background-color: green;
 }
+
+.day.current{
+    opacity: 1;
+
+}
+
+.day.transparent{
+    opacity: 0.5;
+
+}

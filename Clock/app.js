@@ -1,5 +1,5 @@
 let current = document.getElementById("clock");
-openClock = () => {
+const openClock = () => {
   clockContainer = document.getElementById("clock");
   clockContainer.classList.remove("hide");
   if (current != clockContainer) {
@@ -8,14 +8,14 @@ openClock = () => {
   }
 };
 
-openTimer = () => {
+const openTimer = () => {
   timerContainer = document.getElementById("timer");
   timerContainer.classList.remove("hide");
   current.classList.add("hide");
   current = timerContainer;
 };
 
-openStopWatch = () => {
+const openStopWatch = () => {
   stopWatchContainer = document.getElementById("stopwatch");
   stopWatchContainer.classList.remove("hide");
   current.classList.add("hide");
@@ -27,7 +27,7 @@ let timeSW = 0;
 let paused = false;
 let stopwatchInterval = null;
 
-startStopWatch = () => {
+const startStopWatch = () => {
   let btn = document.getElementById("SwStart");
   btn.innerHTML = "Pause";
   if (!stopwatchInterval) {
@@ -47,7 +47,7 @@ document.getElementById("SwStart").addEventListener("click", function () {
   }
 });
 
-pauseStopWatch = () => {
+const pauseStopWatch = () => {
   if (timeSW) {
     let btn = document.getElementById("SwStart");
     paused = !paused;
@@ -64,7 +64,7 @@ pauseStopWatch = () => {
   }
 };
 
-resetStopWatch = () => {
+const resetStopWatch = () => {
   let btn = document.getElementById("SwStart");
   btn.innerHTML = "Start";
   clearInterval(stopwatchInterval);
@@ -74,7 +74,7 @@ resetStopWatch = () => {
   displaySW(timeSW);
 };
 
-displaySW = (time) => {
+const displaySW = (time) => {
   let timeStopWatch = document.getElementById("timeStopWatch");
   let hours = Math.floor(time / 3600);
   let minutes = Math.floor((time % 3600) / 60);
@@ -89,3 +89,99 @@ displaySW = (time) => {
   timeStopWatch.textContent = `${hoursStr} : ${minutesStr} : ${secondsStr}`;
 };
 //---------------------------
+
+// CLOCK
+const d = new Date();
+
+const changeDate = () => {
+  const date = document.getElementById("dateHeading");
+  let day = d.getDate();
+  let month = d.getMonth() + 1;
+  let year = d.getFullYear();
+  date.innerHTML = `${month} / ${day} / ${year}`;
+  
+};
+
+//time
+let currentT = "ampm";
+window.onload = function () {
+  const savedFormat = localStorage.getItem("timeFormat");
+  const btn = document.getElementById("changeampm");
+  if (savedFormat) {
+    currentT = savedFormat;
+    if (savedFormat == "24h") {
+      btn.innerHTML = "Change to AM/PM format";
+    } else {
+      btn.innerHTML = "Change to 24H format";
+    }
+  } else {
+    currentT = "ampm";
+  }
+  updateTimeDisplay();
+  changeDay();
+  changeDate();
+};
+
+const timeElement = document.getElementById("time");
+
+function updateTimeDisplay() {
+  const now = new Date();
+  let h = now.getHours();
+  let m = now.getMinutes();
+  if (currentT === "ampm") {
+    let ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12;
+    if (h === 0) h = 12;
+    if (h < 10) h = "0" + h;
+    if (m < 10) m = "0" + m;
+    timeElement.textContent = `${h}:${m} ${ampm}`;
+  } else {
+    if (h < 10) h = "0" + h;
+    if (m < 10) m = "0" + m;
+    timeElement.textContent = `${h}:${m}`;
+  }
+}
+
+// time ampm
+let toggle24H = () => {
+  const btn = document.getElementById("changeampm");
+  currentT = currentT === "ampm" ? "24h" : "ampm";
+  if (currentT == "24h") {
+    btn.innerHTML = "Change to AM/PM format";
+  } else {
+    btn.innerHTML = "Change to 24H format";
+  }
+  localStorage.setItem("timeFormat", currentT);
+  updateTimeDisplay();
+};
+
+setInterval(updateTimeDisplay, 1000);
+
+let changeDay = () => {
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const currentDay = daysOfWeek[d.getDay()];
+  const currentDayElement = document.getElementById(currentDay);
+
+  currentDayElement.classList.add("current");
+  currentDayElement.classList.remove("transparent");
+};
+
+setInterval(() => {
+  const now = new Date();
+  const currentDay = now.getDate();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  if (currentDay !== day || (currentHours === 0 && currentMinutes === 0)) {
+    day = currentDay;
+    changeDay();
+    changeDate();
+  }
+}, 1000);
