@@ -1,25 +1,26 @@
 let current = document.getElementById("clock");
 const openClock = () => {
-  clockContainer = document.getElementById("clock");
+  const clockContainer = document.getElementById("clock");
+  if (current && current !== clockContainer) current.classList.add("hide");
   clockContainer.classList.remove("hide");
-  if (current != clockContainer) {
-    current.classList.add("hide");
-    current = clockContainer;
-  }
+  current = clockContainer;
+  localStorage.setItem("currentPage", "clock");
 };
 
 const openTimer = () => {
-  timerContainer = document.getElementById("timer");
+  const timerContainer = document.getElementById("timer");
+  if (current && current !== timerContainer) current.classList.add("hide");
   timerContainer.classList.remove("hide");
-  current.classList.add("hide");
   current = timerContainer;
+  localStorage.setItem("currentPage", "timer");
 };
 
 const openStopWatch = () => {
-  stopWatchContainer = document.getElementById("stopwatch");
+  const stopWatchContainer = document.getElementById("stopwatch");
+  if (current && current !== stopWatchContainer) current.classList.add("hide");
   stopWatchContainer.classList.remove("hide");
-  current.classList.add("hide");
   current = stopWatchContainer;
+  localStorage.setItem("currentPage", "stopwatch");
 };
 
 //StopWatch
@@ -92,19 +93,22 @@ const displaySW = (time) => {
 
 // CLOCK
 const d = new Date();
-
+let day = d.getDate();
+let month = d.getMonth() + 1;
+let year = d.getFullYear();
 const changeDate = () => {
   const date = document.getElementById("dateHeading");
-  let day = d.getDate();
-  let month = d.getMonth() + 1;
-  let year = d.getFullYear();
+  day = d.getDate();
+  month = d.getMonth() + 1;
+  year = d.getFullYear();
   date.innerHTML = `${month} / ${day} / ${year}`;
-  
 };
 
 //time
 let currentT = "ampm";
+
 window.onload = function () {
+
   const savedFormat = localStorage.getItem("timeFormat");
   const btn = document.getElementById("changeampm");
   if (savedFormat) {
@@ -120,6 +124,27 @@ window.onload = function () {
   updateTimeDisplay();
   changeDay();
   changeDate();
+
+  const timerForm = document.getElementById("timerForm");
+  if (timerForm) timerForm.onsubmit = handleTimerSubmit;
+  const resetBtn = document.getElementById("resetTimer");
+  if (resetBtn) resetBtn.onclick = resetTimer;
+  const stopBtn = document.getElementById("stopTimer");
+  if (stopBtn) stopBtn.onclick = stopTimer;
+  const pauseBtn = document.getElementById("pauseTimer");
+  if (pauseBtn) pauseBtn.onclick = pauseTimer;
+  showPauseButton(false);
+  showResetStopButtons(false);
+
+  // Load last opened page
+  const lastPage = localStorage.getItem("currentPage");
+  if (lastPage === "timer") {
+    openTimer();
+  } else if (lastPage === "stopwatch") {
+    openStopWatch();
+  } else {
+    openClock();
+  }
 };
 
 const timeElement = document.getElementById("time");
@@ -132,7 +157,6 @@ function updateTimeDisplay() {
     let ampm = h >= 12 ? "PM" : "AM";
     h = h % 12;
     if (h === 0) h = 12;
-    if (h < 10) h = "0" + h;
     if (m < 10) m = "0" + m;
     timeElement.textContent = `${h}:${m} ${ampm}`;
   } else {
@@ -185,3 +209,175 @@ setInterval(() => {
     changeDate();
   }
 }, 1000);
+
+// Timer
+
+
+let timerInterval = null;
+let timerRemaining = 0;
+let timerPaused = false;
+let timerTickAudio = null;
+let timerPrevValue = 0;
+
+
+function handleTimerSubmit(event) {
+  event.preventDefault();
+  let timerH = document.getElementById("timerHours");
+  let timerM = document.getElementById("timerMinutes");
+  let timerS = document.getElementById("timerSeconds");
+  if (
+    timerH != null && timerH.value >= 0 &&
+    timerM != null && timerM.value >= 0 &&
+    timerS != null && timerS.value >= 0
+  ) {
+    let remaining = Number(timerH.value) * 3600 + Number(timerM.value) * 60 + Number(timerS.value);
+    if (remaining === 0) {
+      document.getElementById("timerTime").textContent = "Try entering positive numbers";
+      return;
+    }
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    stopTimerTick();
+    timerRemaining = remaining;
+    timerPrevValue = remaining;
+    timerPaused = false;
+    updateTimerDisplay();
+    startTimerTick();
+    const timerStatus = document.getElementById("timerStatus");
+    if (timerStatus) timerStatus.classList.remove("hideTimer");
+    showPauseButton(true);
+    showResetStopButtons(false);
+    timerInterval = setInterval(() => {
+      if (!timerPaused) {
+        timerRemaining--;
+        updateTimerDisplay();
+        if (timerRemaining <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          stopTimerTick();
+          document.getElementById("timerTime").textContent = "Time's up!";
+          playTimerDoneUntilStopped();
+          showPauseButton(false);
+          showResetStopButtons(true);
+        }
+      }
+    }, 1000);
+  } else {
+    document.getElementById("timerTime").textContent = "Please enter valid values!";
+  }
+}
+
+function updateTimerDisplay() {
+  let timerTime = document.getElementById("timerTime");
+  let remaining = timerRemaining;
+  let hours = Math.floor(remaining / 3600);
+  let minutes = Math.floor((remaining % 3600) / 60);
+  let seconds = remaining % 60;
+  let hoursStr = hours < 10 ? "0" + hours : hours;
+  let minutesStr = minutes < 10 ? "0" + minutes : minutes;
+  let secondsStr = seconds < 10 ? "0" + seconds : seconds;
+  timerTime.textContent = `${hoursStr} : ${minutesStr} : ${secondsStr}`;
+}
+
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  stopTimerTick();
+  timerPaused = false;
+  const timerStatus = document.getElementById("timerStatus");
+  if (timerStatus) timerStatus.classList.add("hideTimer");
+  showPauseButton(false);
+  showResetStopButtons(false);
+  const pauseBtn = document.getElementById("pauseTimer");
+  if (pauseBtn) pauseBtn.textContent = "Pause";
+  if (timerDoneAudio) {
+    timerDoneAudio.pause();
+    timerDoneAudio.currentTime = 0;
+  }
+}
+
+
+function pauseTimer() {
+  timerPaused = !timerPaused;
+  const pauseBtn = document.getElementById("pauseTimer");
+  const resetBtn = document.getElementById("resetTimer");
+  const stopBtn = document.getElementById("stopTimer");
+  if (timerPaused) {
+    pauseBtn.textContent = "Resume";
+    stopTimerTick();
+    if (resetBtn) resetBtn.style.display = "none";
+    if (stopBtn) stopBtn.style.display = "inline-block";
+  } else {
+    pauseBtn.textContent = "Pause";
+    startTimerTick();
+    showResetStopButtons(false);
+  }
+}
+
+function startTimerTick() {
+  if (!timerTickAudio) {
+    timerTickAudio = new Audio('./assets/timerTick.mp3');
+    timerTickAudio.loop = true;
+  }
+  timerTickAudio.currentTime = 0;
+  timerTickAudio.play();
+}
+
+function stopTimerTick() {
+  if (timerTickAudio) {
+    timerTickAudio.pause();
+    timerTickAudio.currentTime = 0;
+  }
+}
+
+function showPauseButton(show) {
+  const pauseBtn = document.getElementById("pauseTimer");
+  if (pauseBtn) pauseBtn.style.display = show ? "inline-block" : "none";
+}
+
+function showResetStopButtons(show) {
+  const resetBtn = document.getElementById("resetTimer");
+  const stopBtn = document.getElementById("stopTimer");
+  if (resetBtn) resetBtn.style.display = show ? "inline-block" : "none";
+  if (stopBtn) stopBtn.style.display = show ? "inline-block" : "none";
+}
+
+
+let timerDoneAudio = null;
+
+function playTimerDoneUntilStopped() {
+  if (timerDoneAudio && !timerDoneAudio.paused) return;
+
+  timerDoneAudio = new Audio('./assets/timerDone.mp3');
+  timerDoneAudio.loop = true;
+  timerDoneAudio.play();
+
+  function stopAudio() {
+    if (timerDoneAudio) {
+      timerDoneAudio.pause();
+      timerDoneAudio.currentTime = 0;
+    }
+    var stopBtn = document.getElementById("stopTimer");
+    var resetBtn = document.getElementById("resetTimer");
+    if (stopBtn) stopBtn.removeEventListener("click", stopAudio);
+    if (resetBtn) resetBtn.removeEventListener("click", stopAudio);
+  }
+
+  var stopBtn = document.getElementById("stopTimer");
+  var resetBtn = document.getElementById("resetTimer");
+  if (stopBtn) {
+    stopBtn.removeEventListener("click", stopAudio);
+    stopBtn.addEventListener("click", stopAudio);
+  }
+  if (resetBtn) {
+    resetBtn.removeEventListener("click", stopAudio);
+    resetBtn.addEventListener("click", stopAudio);
+  }
+}
+
+

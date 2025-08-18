@@ -1,3 +1,6 @@
+#timerStatus.hideTimer {
+    display: none !important;
+}
 body{
     margin: 0;
     padding: 0;
@@ -8,7 +11,10 @@ body{
     justify-content: center;
     height: 100vh;
 }
-
+a:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
 nav{
     position: absolute;
     top: 20px;

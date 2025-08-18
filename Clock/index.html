@@ -35,8 +35,31 @@
         </div>
     </div>
 
-    <div id="timer" class="hide">
 
+    <div id="timer" class="hide">
+        <form id="timerForm">
+            <label>
+                Hours:
+                <input type="number" id="timerHours" name="hours" min="0" max="23" placeholder="0">
+            </label>
+            <span>:</span>
+            <label>
+                Minutes:
+                <input type="number" id="timerMinutes" name="minutes" min="0" max="59" placeholder="0">
+            </label>
+            <span>:</span>
+            <label>
+                Seconds:
+                <input type="number" id="timerSeconds" name="seconds" min="0" max="59" placeholder="0">
+            </label>
+            <button type="submit">Set Timer</button>
+        </form>
+        <div id="timerStatus" class="hideTimer">
+            <h1 id="timerTime">00 : 00 : 00</h1>
+            <button id="pauseTimer">Pause</button>
+            <button id="resetTimer">Reset</button>
+            <button id="stopTimer">Stop</button>
+        </div>
     </div>
     
     <div id="stopwatch" class="hide">
